@@ -1,0 +1,3 @@
+rootProject.name = 'MyaloBox2'
+
+include ':app'
