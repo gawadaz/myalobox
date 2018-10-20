@@ -22,7 +22,7 @@ export default class extends React.Component {
     constructor() {
         super();
         this.state = {
-            isReady: true,
+            isReady: false,
             isLoggedIn: false,
             exist: false //indicates if user exist in realtime database
         }
