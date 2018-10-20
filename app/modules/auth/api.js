@@ -1,20 +1,20 @@
-import { auth, database, provider } from "../../config/firebase";
+import { auth, database, provider } from '../../config/firebase';
 
 //Register the user using email and password
 export function register(data, callback) {
     const { email, password, username } = data;
     auth.createUserWithEmailAndPassword(email, password)
-        .then((resp) => createUser({ username, uid:resp.user.uid }, callback))
+        .then((resp) => createUser({ username, uid: resp.user.uid }, callback))
         .catch((error) => callback(false, null, error));
 }
 
 //Create the user object in realtime database
-export function createUser (user, callback) {
+export function createUser(user, callback) {
     const userRef = database.ref().child('users');
-    console.log('user: ' + JSON.stringify(user));
+    console.log(`user: ${JSON.stringify(user)}`);
     userRef.child(user.uid).update({ ...user })
         .then(() => callback(true, user, null))
-        .catch((error) => callback(false, null, {message: error}));
+        .catch((error) => callback(false, null, { message: error }));
 }
 
 //Sign the user in with their email and password
@@ -28,14 +28,13 @@ export function login(data, callback) {
 //Get the user object from the realtime database
 export function getUser(user, callback) {
     database.ref('users').child(user.uid).once('value')
-        .then(function(snapshot) {
-
+        .then((snapshot) => {
             const exists = (snapshot.val() !== null);
 
             //if the user exist in the DB, replace the user variable with the returned snapshot
             if (exists) user = snapshot.val();
 
-            const data = { exists, user }
+            const data = { exists, user };
             callback(true, data, null);
         })
         .catch(error => callback(false, null, error));
@@ -49,19 +48,19 @@ export function resetPassword(data, callback) {
         .catch((error) => callback(false, null, error));
 }
 
-export function signOut (callback) {
+export function signOut(callback) {
     auth.signOut()
         .then(() => {
-            if (callback) callback(true, null, null)
+            if (callback) callback(true, null, null);
         })
         .catch((error) => {
-            if (callback) callback(false, null, error)
+            if (callback) callback(false, null, error);
         });
 }
 
 
 //Sign user in using Facebook
-export function signInWithFacebook (fbToken, callback) {
+export function signInWithFacebook(fbToken, callback) {
     const credential = provider.credential(fbToken);
     auth.signInWithCredential(credential)
         .then((user) => getUser(user, callback))
