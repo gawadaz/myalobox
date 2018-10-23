@@ -1,51 +1,59 @@
-import React from 'react';
-var { View, StyleSheet, Alert } = require('react-native');
+import React, { Component } from 'react';
+import { View, FlatList, ActivityIndicator } from 'react-native';
 
-import {Button} from 'react-native-elements'
-import {Actions} from 'react-native-router-flux';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import styles from "./styles"
+import { actions as home } from '../../index';
 
-import { actions as auth, theme } from "../../../auth/index"
-const { signOut } = auth;
+import styles from './styles';
+import Category from '../../components/Category';
 
-const { color } = theme;
+const { getCategories } = home;
 
-class Home extends React.Component {
-    constructor(){
+class Home extends Component {
+    constructor() {
         super();
-        this.state = { }
-        
-        this.onSignOut = this.onSignOut.bind(this);
+        this.state = {};
+
+        this.renderItem.bind(this);
     }
 
-    onSignOut() {
-        this.props.signOut(this.onSuccess.bind(this), this.onError.bind(this))
+    componentDidMount() {
+        this.props.getCategories((error) => alert(error.message));
     }
 
-    onSuccess() {
-        Actions.reset("Auth")
-    }
-
-    onError(error) {
-        Alert.alert('Oops!', error.message);
+    renderItem({ item, index }) {
+        return <Category index={index} />;
     }
 
     render() {
-        return (
-            <View style={styles.container}>
-                <Button
-                    raised
-                    borderRadius={4}
-                    title={'LOG OUT'}
-                    containerViewStyle={[styles.containerView]}
-                    buttonStyle={[styles.button]}
-                    textStyle={styles.buttonText}
-                    onPress={this.onSignOut}/>
-            </View>
-        );
+        if (this.props.isLoading) {
+            return (
+                <View style={styles.activityIndicator}>
+                    <ActivityIndicator animating={true} />
+                </View>
+            );
+        } else {
+            return (
+                <View style={styles.container}>
+                    <FlatList
+                        ref='listRef'
+                        data={this.props.categories}
+                        renderItem={this.renderItem}
+                        initialNumToRender={5}
+                        keyExtractor={(item, index) => index.toString()} 
+                    />
+                </View>
+            );
+        }
     }
 }
 
-export default connect(null, { signOut })(Home);
+function mapStateToProps(state, props) {
+    return {
+        isLoading: state.homeReducer.isLoading,
+        categories: state.homeReducer.categories
+    };
+}
+
+export default connect(mapStateToProps, { getCategories })(Home);
